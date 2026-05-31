@@ -1,0 +1,6 @@
+{
+  "name": "Retro Pixel Racer",
+  "description": "A nostalgic 2D pixel-art racing game featuring retro visual styles, 8-bit sound effects, track variety, car upgrades, simulated global multiplayer competitions, daily missions, and responsive performance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
