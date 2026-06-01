@@ -94,6 +94,8 @@ fun TrackSelectionScreen(
                         "track_desert" -> 300
                         "track_neon" -> 800
                         "track_snow" -> 1200
+                        "track_volcano" -> 1800
+                        "track_space" -> 2500
                         else -> 0
                     }
 

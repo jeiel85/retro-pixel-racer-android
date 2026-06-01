@@ -245,8 +245,8 @@ fun UpgradeItemRow(
     coins: Int,
     onUpgrade: () -> Unit
 ) {
-    val isMax = level >= 5
-    val cost = level * 200
+    val isMax = level >= 10
+    val cost = level * 250
     val canAfford = coins >= cost && !isMax
 
     Column(
@@ -278,20 +278,20 @@ fun UpgradeItemRow(
             )
         }
 
-        // Stats Visual bar indicator (Level blocks [▮▮▮▯▯])
+        // Stats Visual bar indicator (Level blocks [▮▮▮▮▮▮▮▮▮▮])
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                horizontalArrangement = Arrangement.spacedBy(3.dp)
             ) {
-                for (i in 1..5) {
+                for (i in 1..10) {
                     val active = i <= level
                     Box(
                         modifier = Modifier
-                            .width(28.dp)
+                            .width(18.dp)
                             .height(10.dp)
                             .clip(RoundedCornerShape(100))
                             .background(if (active) Color.Green else Color.DarkGray)

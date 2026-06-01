@@ -4,6 +4,7 @@ import android.view.KeyEvent
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -21,6 +22,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
@@ -42,13 +44,14 @@ import kotlin.random.Random
 // Represents a road object (coin, obstacle, rival)
 data class RoadElement(
     val id: Int,
-    val trackDistance: Float, // distance along track (0 to trackLength)
+    var trackDistance: Float, // distance along track (0 to trackLength)
     val roadX: Float,         // horizontal offset (-1.0 to 1.0)
     val type: ElementType,
     var collected: Boolean = false,
     var crashed: Boolean = false,
     val speedKmph: Float = 0f, // only for CPU cars
-    var currentRoadX: Float = roadX // mutable for CPU steering
+    var currentRoadX: Float = roadX, // mutable for CPU steering
+    var spinAngle: Float = 0f
 )
 
 enum class ElementType {
@@ -329,20 +332,24 @@ fun GameEngineScreen(
 
             // Update items
             roadElements.forEach { element ->
-                // Make CPU cars drive along
+                // Make CPU cars drive along & update physics/spins
                 if (element.type != ElementType.COIN && element.type != ElementType.BARRIER) {
-                    // Constant slow CPU driving progress
-                    var currentDist = element.trackDistance
-                    if (element.type == ElementType.RIVAL_CAR) {
-                        currentDist = rivalDistance
+                    if (element.crashed) {
+                        element.spinAngle += 720f * elapsedSec
+                        element.currentRoadX += (if (element.roadX >= 0) 2.2f else -2.2f) * elapsedSec
                     } else {
-                        val cpuSpeedMps = (element.speedKmph * 1000f) / 3600f
-                        currentDist += cpuSpeedMps * elapsedSec
-                    }
-                    
-                    // Steer back and forth randomly
-                    if (Math.random() < 0.01) {
-                        element.currentRoadX = (element.roadX + (Math.random().toFloat() - 0.5f) * 0.4f).coerceIn(-0.8f, 0.8f)
+                        // Constant slow CPU driving progress
+                        if (element.type == ElementType.RIVAL_CAR) {
+                            element.trackDistance = rivalDistance
+                        } else {
+                            val cpuSpeedMps = (element.speedKmph * 1000f) / 3600f
+                            element.trackDistance += cpuSpeedMps * elapsedSec
+                        }
+                        
+                        // Steer back and forth randomly
+                        if (Math.random() < 0.01) {
+                            element.currentRoadX = (element.roadX + (Math.random().toFloat() - 0.5f) * 0.4f).coerceIn(-0.8f, 0.8f)
+                        }
                     }
                 }
 
@@ -363,20 +370,21 @@ fun GameEngineScreen(
                             isCrashed = true
                             crashTime = 1.5f // seconds slow penalty
                             speedKmph = 20f   // slows down instantly
-                            if (screenShakeOn) screenShakeAmount = 8f
+                            if (screenShakeOn) screenShakeAmount = 10f // stronger shake
                             viewModel.soundManager.playCrashSfx()
                             
-                            // Explosion shockwave particles
-                            for (p in 0..12) {
+                            // Explosion shockwave and 40 metallic sparks flying downwards/backwards
+                            for (p in 0..40) {
+                                val sparkColor = if (p % 3 == 0) Color(0xFFFF5722) else if (p % 3 == 1) Color(0xFFFFD54F) else Color.White
                                 particles.add(
                                     GameParticle(
-                                        x = playerX * 0.3f + 0.5f,
+                                        x = playerX * 0.3f + 0.5f + (Math.random().toFloat() - 0.5f) * 0.05f,
                                         y = 0.8f,
-                                        vx = (Math.random().toFloat() - 0.5f) * 0.6f,
-                                        vy = (Math.random().toFloat() - 0.5f) * 0.4f,
-                                        color = if (p % 2 == 0) Color.Yellow else Color.Red,
+                                        vx = (Math.random().toFloat() - 0.5f) * 0.5f,
+                                        vy = 0.15f + Math.random().toFloat() * 0.35f, // downwards
+                                        color = sparkColor,
                                         life = 1.0f,
-                                        size = 18f
+                                        size = 6f + Math.random().toFloat() * 8f
                                     )
                                 )
                             }
@@ -793,6 +801,51 @@ fun GameEngineScreen(
             )
         }
 
+        // Bouncing/Flashing Neon warning crash banner overlay
+        if (isCrashed) {
+            val infiniteTransition = rememberInfiniteTransition(label = "crash_flash")
+            val warningAlpha by infiniteTransition.animateFloat(
+                initialValue = 0.2f,
+                targetValue = 1.0f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(150, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "crash_flash"
+            )
+            
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 120.dp), // slightly above controls
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .background(Color.Black.copy(alpha = 0.85f * warningAlpha), RoundedCornerShape(8.dp))
+                        .border(2.dp, Color.Red, RoundedCornerShape(8.dp))
+                        .padding(horizontal = 24.dp, vertical = 16.dp)
+                ) {
+                    Text(
+                        text = "💥 COLLISION CRASH! 💥",
+                        color = Color.Yellow,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Black,
+                        fontFamily = FontFamily.Monospace
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "SPEED DECAY PENALTY ACTIVE",
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace
+                    )
+                }
+            }
+        }
+
         // Final Completed Score Summary Dialog Box
         if (gameCompleted) {
             Box(
@@ -1085,8 +1138,14 @@ private fun DrawScope.drawGameRoad(
                     else -> Color(0xFF2E7D32)
                 }
                 
-                // Draw AI Car
-                drawPixelCarSprite(fillCol, px, py, scale, headlightsOn = true)
+                // Draw AI Car - rotated if spinning/crashed
+                if (element.spinAngle != 0f) {
+                    rotate(element.spinAngle, Offset(px, py)) {
+                        drawPixelCarSprite(fillCol, px, py, scale, headlightsOn = false)
+                    }
+                } else {
+                    drawPixelCarSprite(fillCol, px, py, scale, headlightsOn = true)
+                }
 
                 // Label tag above Rival car
                 if (element.type == ElementType.RIVAL_CAR) {

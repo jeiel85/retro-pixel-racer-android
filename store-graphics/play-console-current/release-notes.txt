@@ -1,15 +1,13 @@
 <ko-KR>
-- 패키지 네임스페이스 최적화 및 릴리즈 서명 보안 수립
-- 고품질 레트로 픽셀 아트 스타일 앱 아이콘 및 스토어 피처 배너 전면 적용
-- 실시간 saw/square 8비트 사운드 신시사이저 엔진 안정화
-- 트랙 해금 및 차고지 성능 튜닝(엔진, 조향, 속도) 버그 수정 및 완성도 고도화
-- 로컬 Room DB 데이터 및 Preferences 설정 저장 메커니즘 최적화
+- 차량 튜닝 제한 해제: 엔진 가속, 핸들 조향, 최고 속도의 업그레이드 제한이 5단계에서 10단계로 확장되었습니다. 최고속도 340km/h에 도전해 보세요!
+- 2종의 최고 난이도 EXPERT 신규 서킷 추가: '마그마 인페르노(Magma Inferno)' 및 '코스믹 스피드웨이(Cosmic Speedway)' 트랙이 새로 추가되어 격렬한 도전 욕구를 자극합니다.
+- 피격 판정 및 충돌 피드백 연출 전면 리뉴얼: 경쟁 차량 충돌 시 격렬하게 720도 회전하며 트랙 밖으로 튕겨 나가는 스핀아웃 시스템을 도입했습니다.
+- 충돌 시 40여 개의 고속 스파크 입자가 쏟아지며, 화면 흔들림 효과와 "COLLISION CRASH" 경고 배너가 더해져 더욱 실감나고 짜릿한 손맛을 제공합니다.
 </ko-KR>
 
 <en-US>
-- Optimized package namespaces and established secure release signing configs.
-- Integrated premium retro pixel-art launcher icons and store feature graphics.
-- Stabilized the real-time square/sawtooth 8-bit audio synthesis engine.
-- Polished garage upgrade tuners (engine, handling, top speed) and track unlock stages.
-- Refined Room DB offline data sandboxing and preferences persistence flows.
+- Expanded Performance Tuning Cap: Max upgrade limit for Engine Accel, Steering Handling, and Top Speed has been unlocked from Level 5 to Level 10. Maximize your power to reach 340 km/h!
+- Introduced 2 Challenging Expert Tracks: Tackle the perilous 'Magma Inferno' and the futuristic 'Cosmic Speedway' expert circuits with higher unlock rewards.
+- Collision Feedback & Crash Overhaul: Added a dramatic tactical spinout effect where collided CPU cars spin 720° and get thrown off-track.
+- Enhanced hits with 40 high-speed metallic spark particles, intense screen shakes, and a neon crash warning banner to deliver a deeply satisfying arcade punch.
 </en-US>

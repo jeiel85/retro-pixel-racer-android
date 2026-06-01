@@ -34,7 +34,9 @@ class GameRepository(private val gameDao: GameDao) {
                 TrackState("track_forest", "Green Valley", "FOREST", "EASY", 1200, unlocked = true),
                 TrackState("track_desert", "Dusty Ruins", "DESERT", "NORMAL", 1800, unlocked = false),
                 TrackState("track_neon", "Pixel Neon Grid", "NEON", "HARD", 2400, unlocked = false),
-                TrackState("track_snow", "Chilling Glacier", "SNOW", "HARD", 3000, unlocked = false)
+                TrackState("track_snow", "Chilling Glacier", "SNOW", "HARD", 3000, unlocked = false),
+                TrackState("track_volcano", "Magma Inferno", "DESERT", "EXPERT", 4000, unlocked = false),
+                TrackState("track_space", "Cosmic Speedway", "NEON", "EXPERT", 5000, unlocked = false)
             )
             gameDao.insertTrackStates(defaultTracks)
 
@@ -47,7 +49,9 @@ class GameRepository(private val gameDao: GameDao) {
                     "track_forest" -> 55000L // 55 seconds
                     "track_desert" -> 85000L // 1:25
                     "track_neon" -> 115000L // 1:55
-                    else -> 145000L // 2:25
+                    "track_snow" -> 145000L // 2:25
+                    "track_volcano" -> 185000L // 3:05
+                    else -> 225000L // 3:45
                 }
                 
                 // Add 5 bot run records for each track
@@ -103,9 +107,9 @@ class GameRepository(private val gameDao: GameDao) {
             else -> return false
         }
         
-        if (level >= 5) return false // Max level 5
+        if (level >= 10) return false // Max level 10
         
-        val cost = level * 200 // Level 1->2 costs 200, 2->3 costs 400, etc.
+        val cost = level * 250 // Level 1->2 costs 250, 2->3 costs 500, etc. Level 9->10 costs 2250.
         if (profile.coins >= cost) {
             val updatedProfile = when (type) {
                 "ENGINE" -> profile.copy(coins = profile.coins - cost, engineLevel = level + 1)
