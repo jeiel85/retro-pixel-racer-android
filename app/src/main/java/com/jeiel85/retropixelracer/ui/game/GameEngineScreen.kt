@@ -120,7 +120,11 @@ fun GameEngineScreen(
     var rivalFinished by remember { mutableStateOf(false) }
     var rivalDistance by remember { mutableStateOf(0f) }
     val rivalName = if (isMultiplayer && opponents.isNotEmpty()) opponents.first() else "AI Racer"
-    val rivalSpeedKmph = maxSpeed * 0.93f // Competitive! Close to player speed
+    // Dynamic Rival AI speed state (rubber-banded)
+    var rivalSpeedState by remember { mutableStateOf(maxSpeed * 0.93f) }
+    
+    // Slipstream Drafting State
+    var isDrafting by remember { mutableStateOf(false) }
 
     var countDown by remember { mutableStateOf(4) } // 3, 2, 1, GO, RUN
     var gameCompleted by remember { mutableStateOf(false) }
@@ -190,7 +194,7 @@ fun GameEngineScreen(
                     trackDistance = 100f,
                     roadX = 0.4f,
                     type = ElementType.RIVAL_CAR,
-                    speedKmph = rivalSpeedKmph
+                    speedKmph = rivalSpeedState
                 )
             )
         }
@@ -247,11 +251,32 @@ fun GameEngineScreen(
                 }
             }
 
+            // Slipstream Drafting Detection
+            var draftActive = false
+            if (isMultiplayer) {
+                val rivalElement = roadElements.firstOrNull { it.type == ElementType.RIVAL_CAR }
+                if (rivalElement != null) {
+                    val distDiff = rivalElement.trackDistance - progressDistance
+                    if (distDiff in 0.1f..40.0f && Math.abs(playerX - rivalElement.currentRoadX) < 0.35f) {
+                        draftActive = true
+                    }
+                }
+            }
+            isDrafting = draftActive
+
+            // Dynamic maxSpeed and acceleration based on slipstream drafting
+            var activeMaxSpeed = maxSpeed
+            var activeAcceleration = kAcceleration
+            if (isDrafting) {
+                activeMaxSpeed = maxSpeed * 1.15f
+                activeAcceleration = kAcceleration * 1.30f
+            }
+
             // 3. User Input Speed / Steering physics
             // Accelerate / Brake / Friction
             var targetSpeed = 0f
             if (keyGasPressed && !isCrashed) {
-                targetSpeed = maxSpeed
+                targetSpeed = activeMaxSpeed
             } else if (keyBrakePressed) {
                 targetSpeed = 0f
             } else {
@@ -259,7 +284,7 @@ fun GameEngineScreen(
             }
 
             if (speedKmph < targetSpeed) {
-                speedKmph = (speedKmph + kAcceleration * elapsedSec).coerceAtMost(targetSpeed)
+                speedKmph = (speedKmph + activeAcceleration * elapsedSec).coerceAtMost(targetSpeed)
             } else if (speedKmph > targetSpeed) {
                 val decayRate = if (keyBrakePressed) kDeacceleration * 1.5f else kDeacceleration * 0.5f
                 speedKmph = (speedKmph - decayRate * elapsedSec).coerceAtLeast(0f)
@@ -303,8 +328,28 @@ fun GameEngineScreen(
             val speedMps = (speedKmph * 1000f) / 3600f
             progressDistance += speedMps * elapsedSec
 
-            // 4. Update Opponent progress in Multiplayer mode
+            // 4. Update Opponent progress in Multiplayer mode (Rubber-banding AI)
             if (isMultiplayer) {
+                val distanceAhead = progressDistance - rivalDistance
+                
+                // Base speed is around maxSpeed * 0.92f
+                var targetRivalSpeed = maxSpeed * 0.92f
+                
+                if (distanceAhead > 25f) {
+                    // Player is far ahead: Rival gets an active catch-up "nitro" boost!
+                    // Speeds up proportionally (up to +18%) to close the gap!
+                    val catchUpFactor = (distanceAhead / 150f).coerceIn(0f, 0.18f)
+                    targetRivalSpeed = maxSpeed * (0.92f + catchUpFactor)
+                } else if (distanceAhead < -40f) {
+                    // Player is far behind: Rival slows down slightly to let the player catch up
+                    val slowDownFactor = (-distanceAhead / 200f).coerceIn(0f, 0.12f)
+                    targetRivalSpeed = maxSpeed * (0.92f - slowDownFactor)
+                }
+                
+                // Smoothly interpolate rival speed
+                val rivalSpeedKmph = (rivalSpeedState + (targetRivalSpeed - rivalSpeedState) * 1.5f * elapsedSec).coerceIn(40f, maxSpeed * 1.15f)
+                rivalSpeedState = rivalSpeedKmph
+                
                 val opponentSpeedMps = (rivalSpeedKmph * 1000f) / 3600f
                 rivalDistance += opponentSpeedMps * elapsedSec
                 if (rivalDistance >= trackLength) {
@@ -315,19 +360,36 @@ fun GameEngineScreen(
             // 5. Update spawned obstacle items & Check Collisions
             val playerDistance = progressDistance
             
-            // Generate Exhaust Smoke
-            if (isPlaying && speedKmph > 0 && particleIntensity > 0 && Math.random() < 0.2 * particleIntensity) {
-                particles.add(
-                    GameParticle(
-                        x = playerX * 0.2f + 0.5f + (Math.random().toFloat() - 0.5f) * 0.02f,
-                        y = 0.82f,
-                        vx = (Math.random().toFloat() - 0.5f) * 0.05f,
-                        vy = -0.05f,
-                        color = Color.LightGray.copy(alpha = 0.6f),
-                        life = 1.0f,
-                        size = 8f
+            // Generate Exhaust Smoke & Drafting neon wind trail sparks
+            if (isPlaying && speedKmph > 0 && particleIntensity > 0) {
+                if (Math.random() < 0.2 * particleIntensity) {
+                    particles.add(
+                        GameParticle(
+                            x = playerX * 0.2f + 0.5f + (Math.random().toFloat() - 0.5f) * 0.02f,
+                            y = 0.82f,
+                            vx = (Math.random().toFloat() - 0.5f) * 0.05f,
+                            vy = -0.05f,
+                            color = Color.LightGray.copy(alpha = 0.6f),
+                            life = 1.0f,
+                            size = 8f
+                        )
                     )
-                )
+                }
+                
+                // Drafting Neon blue wind exhaust sparks
+                if (isDrafting && Math.random() < 0.4 * particleIntensity) {
+                    particles.add(
+                        GameParticle(
+                            x = playerX * 0.2f + 0.5f + (Math.random().toFloat() - 0.5f) * 0.08f,
+                            y = 0.85f,
+                            vx = -steerDir * 0.1f + (Math.random().toFloat() - 0.5f) * 0.05f,
+                            vy = 0.02f + Math.random().toFloat() * 0.08f,
+                            color = Color(0xFF00E5FF), // neon blue
+                            life = 0.8f,
+                            size = 6f + Math.random().toFloat() * 6f
+                        )
+                    )
+                }
             }
 
             // Update items
@@ -346,9 +408,31 @@ fun GameEngineScreen(
                             element.trackDistance += cpuSpeedMps * elapsedSec
                         }
                         
-                        // Steer back and forth randomly
-                        if (Math.random() < 0.01) {
-                            element.currentRoadX = (element.roadX + (Math.random().toFloat() - 0.5f) * 0.4f).coerceIn(-0.8f, 0.8f)
+                        // Steer back and forth randomly, OR actively dodge/pass the player!
+                        val distToPlayer = element.trackDistance - progressDistance
+                        if (distToPlayer in 0.1f..35.0f && Math.abs(playerX - element.currentRoadX) < 0.35f) {
+                            // Player is blocking the CPU/Rival! Actively brake and steer left or right to pass!
+                            element.currentRoadX = (element.currentRoadX + (if (playerX >= 0) -0.5f else 0.5f) * elapsedSec * 3f).coerceIn(-0.8f, 0.8f)
+                            
+                            // Braking sparks visual effect
+                            if (Math.random() < 0.1) {
+                                particles.add(
+                                    GameParticle(
+                                        x = element.currentRoadX * 0.3f + 0.5f + (Math.random().toFloat() - 0.5f) * 0.02f,
+                                        y = 0.5f + (element.trackDistance - progressDistance) / 350f * 0.32f,
+                                        vx = (Math.random().toFloat() - 0.5f) * 0.05f,
+                                        vy = -0.02f,
+                                        color = Color.Red.copy(alpha = 0.8f),
+                                        life = 0.8f,
+                                        size = 6f
+                                    )
+                                )
+                            }
+                        } else {
+                            // Normal wandering
+                            if (Math.random() < 0.01) {
+                                element.currentRoadX = (element.roadX + (Math.random().toFloat() - 0.5f) * 0.4f).coerceIn(-0.8f, 0.8f)
+                            }
                         }
                     }
                 }
@@ -516,7 +600,8 @@ fun GameEngineScreen(
                 rivalDistance = rivalDistance,
                 rivalName = rivalName,
                 isCrashed = isCrashed,
-                carIndex = profile.selectedCarIndex
+                carIndex = profile.selectedCarIndex,
+                isDrafting = isDrafting
             )
 
             drawContext.canvas.restore()
@@ -846,6 +931,43 @@ fun GameEngineScreen(
             }
         }
 
+        // Flashing Neon slipstream drafting boost banner overlay
+        if (isDrafting && !isCrashed) {
+            val infiniteTransition = rememberInfiniteTransition(label = "draft_flash")
+            val draftAlpha by infiniteTransition.animateFloat(
+                initialValue = 0.4f,
+                targetValue = 1.0f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(200, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "draft_flash"
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 130.dp), // below stats, top-center
+                contentAlignment = Alignment.TopCenter
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .background(Color.Black.copy(alpha = 0.85f * draftAlpha), RoundedCornerShape(4.dp))
+                        .border(1.5.dp, Color(0xFF00E5FF), RoundedCornerShape(4.dp))
+                        .padding(horizontal = 14.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        text = "⚡ SLIPSTREAM DRAFT BOOST ACTIVE (+15%) ⚡",
+                        color = Color(0xFF00E5FF),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Black,
+                        fontFamily = FontFamily.Monospace
+                    )
+                }
+            }
+        }
+
         // Final Completed Score Summary Dialog Box
         if (gameCompleted) {
             Box(
@@ -946,7 +1068,8 @@ private fun DrawScope.drawGameRoad(
     rivalDistance: Float,
     rivalName: String,
     isCrashed: Boolean,
-    carIndex: Int
+    carIndex: Int,
+    isDrafting: Boolean
 ) {
     val canvasWidth = size.width
     val canvasHeight = size.height
@@ -1185,6 +1308,36 @@ private fun DrawScope.drawGameRoad(
     val userCarX = canvasWidth * 0.5f
     val userCarY = canvasHeight * 0.82f
     val playerCarScale = 3.6f
+
+    // Draw beautiful slipstream neon-blue wind streams if drafting is active!
+    if (isDrafting) {
+        val animOffset = (System.currentTimeMillis() / 80) % 4
+        val windColor = Color(0xFF00E5FF).copy(alpha = 0.65f)
+        val strokeW = 3f * playerCarScale
+        
+        // Draw 3 dynamic wind lines on each side of the car rushing down
+        for (w in 0..2) {
+            val lyOffset = w * 10f * playerCarScale
+            val ly1 = userCarY - 18f * playerCarScale + animOffset * 4f
+            val ly2 = userCarY + 12f * playerCarScale + animOffset * 4f
+            
+            // Left wind lines
+            drawLine(
+                color = windColor,
+                start = Offset(userCarX - 16f * playerCarScale - w * 3f, ly1 + lyOffset),
+                end = Offset(userCarX - 12f * playerCarScale, ly2 + lyOffset),
+                strokeWidth = strokeW - w
+            )
+            
+            // Right wind lines
+            drawLine(
+                color = windColor,
+                start = Offset(userCarX + 16f * playerCarScale + w * 3f, ly1 + lyOffset),
+                end = Offset(userCarX + 12f * playerCarScale, ly2 + lyOffset),
+                strokeWidth = strokeW - w
+            )
+        }
+    }
 
     val playerCarCol = when (carIndex) {
         0 -> Color(0xFFE53935) // Red

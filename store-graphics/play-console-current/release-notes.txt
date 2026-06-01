@@ -1,13 +1,13 @@
 <ko-KR>
-- 차량 튜닝 제한 해제: 엔진 가속, 핸들 조향, 최고 속도의 업그레이드 제한이 5단계에서 10단계로 확장되었습니다. 최고속도 340km/h에 도전해 보세요!
-- 2종의 최고 난이도 EXPERT 신규 서킷 추가: '마그마 인페르노(Magma Inferno)' 및 '코스믹 스피드웨이(Cosmic Speedway)' 트랙이 새로 추가되어 격렬한 도전 욕구를 자극합니다.
-- 피격 판정 및 충돌 피드백 연출 전면 리뉴얼: 경쟁 차량 충돌 시 격렬하게 720도 회전하며 트랙 밖으로 튕겨 나가는 스핀아웃 시스템을 도입했습니다.
-- 충돌 시 40여 개의 고속 스파크 입자가 쏟아지며, 화면 흔들림 효과와 "COLLISION CRASH" 경고 배너가 더해져 더욱 실감나고 짜릿한 손맛을 제공합니다.
+- 멀티플레이어 대결 시스템 고도화: 경쟁 라이벌 AI가 고정 속도 대신 플레이어의 거리를 추적해 추격하는 다이나믹 러버밴딩(Rubber-Banding) AI 시스템을 탑재했습니다. 플레이어 주행 능력에 맞춰 강력한 '질주 가속'을 발휘합니다.
+- 슬립스트림(드래프팅) 가속 부스터 도입: 라이벌 차량 바로 뒤(40m 이내)에 밀착 주행할 때 공기 저항이 감소하여 +15% 속도 보너스와 +30% 가속 서지 부스트를 획득할 수 있습니다. 캔버스 상에 눈부신 네온-블루 바람길 연출 및 HUD 배너가 실시간 작동합니다.
+- 지능형 충돌 회피 물리 적용: 플레이어가 라이벌 차량 앞을 가로막아 방해할 경우, AI가 지능적으로 제동(제동 적색 스파크 작동)하고 스티어링을 꺾어 우회 추월을 시도합니다.
+- 로비 연결 로그 그래픽 추가: 멀티플레이 대결 매칭 시 실시간 터미널 연결 신호 검색 로그 콘솔이 추가되어 더욱 높은 현장감과 진짜 온라인 환경 같은 매칭 몰입감을 완성했습니다.
 </ko-KR>
 
 <en-US>
-- Expanded Performance Tuning Cap: Max upgrade limit for Engine Accel, Steering Handling, and Top Speed has been unlocked from Level 5 to Level 10. Maximize your power to reach 340 km/h!
-- Introduced 2 Challenging Expert Tracks: Tackle the perilous 'Magma Inferno' and the futuristic 'Cosmic Speedway' expert circuits with higher unlock rewards.
-- Collision Feedback & Crash Overhaul: Added a dramatic tactical spinout effect where collided CPU cars spin 720° and get thrown off-track.
-- Enhanced hits with 40 high-speed metallic spark particles, intense screen shakes, and a neon crash warning banner to deliver a deeply satisfying arcade punch.
+- Premium Multiplayer AI Rubber-Banding: The matched Rival now tracks your distance dynamically, activating catch-up "nitro" boosts (+18% speed) to stay neck-and-neck with you.
+- Slipstream Drafting Boost: Tailgate directly behind the Rival (within 40m) to enter a slipstream, earning a +15% top-speed boost and +30% acceleration surge. Features striking animated neon-blue wind vectors and drafting HUD cards.
+- Interactive Blocking & AI Dodging: Blocking the Rival's lane now makes the AI actively brake (emitting brake taillight sparks) and steer dynamically around you to attempt a pass.
+- Matchmaking Log Console Card: Added realistic real-time command-line transceiver network sync logs to the Lobby screen, delivering an authentic live-matching arcade experience.
 </en-US>

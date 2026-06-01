@@ -101,9 +101,28 @@ fun MultiplayerLobbyScreen(
         ) {
             when (lobbyState) {
                 is GameViewModel.LobbyState.Searching -> {
+                    // Local matchmaking log console simulation
+                    val logs = remember { mutableStateListOf<String>() }
+                    LaunchedEffect(Unit) {
+                        logs.clear()
+                        val rawLogs = listOf(
+                            "📡 INITIATING MULTIPLAYER TRANSCEIVER CORE...",
+                            "🌐 CONNECTING TO TOKYO/PACIFIC EDGE NODE...",
+                            "🛡️ VERIFYING ANTIGRAVITY ENCRYPTED PROTOCOL (OK)",
+                            "📡 SCANNING SECURE ACTIVE PILOT CELLS (1,492 online)",
+                            "🔎 FILTERING CLUSTERS BY COMPARABLE ENGINE LEVEL...",
+                            "⚡ STABLE CONNECTION ESTABLISHED WITH REMOTE CELL!"
+                        )
+                        rawLogs.forEachIndexed { index, log ->
+                            delay(300L * (index + 1))
+                            logs.add(log)
+                        }
+                    }
+
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(20.dp)
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         CircularProgressIndicator(
                             color = Color.Red,
@@ -120,15 +139,35 @@ fun MultiplayerLobbyScreen(
                             modifier = Modifier.scale(scaleBlink)
                         )
 
-                        Text(
-                            text = "Searching worldwide records for matched drivers...",
-                            color = Color.Gray,
-                            fontSize = 11.sp,
-                            fontFamily = FontFamily.Monospace,
-                            textAlign = TextAlign.Center
-                        )
+                        // Scrolling Matchmaking Log Console Card
+                        Card(
+                            shape = RoundedCornerShape(4.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.5f)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(120.dp)
+                                .border(1.dp, Color.Red.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                logs.forEach { log ->
+                                    Text(
+                                        text = log,
+                                        color = if (log.contains("✔") || log.contains("ESTABLISHED")) Color.Green else if (log.contains("ESTABLISHING") || log.contains("INITIATING")) Color.Yellow else Color.Cyan,
+                                        fontSize = 10.sp,
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+                            }
+                        }
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
                         
                         Button(
                             onClick = {
