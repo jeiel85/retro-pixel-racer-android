@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Retro Pixel Racer - 80년대 감성의 아케이드 레이싱 게임. 8비트 사운드와 화려한 신스웨이브 비주얼을 모바일과 브라우저에서 느껴보세요.">
+  <meta name="theme-color" content="#0B0816">
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/jeiel85/retro-pixel-racer-android/main/store-graphics/play-console-current/ic_launcher_512.png">
+  
+  <meta property="og:title" content="Retro Pixel Racer - 아케이드 2D 레이싱">
+  <meta property="og:description" content="향수를 자극하는 8비트 사운드와 스릴 넘치는 픽셀 아트 레이싱!">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jeiel85.github.io/retro-pixel-racer-android/">
+  <meta property="og:image" content="https://raw.githubusercontent.com/jeiel85/retro-pixel-racer-android/main/store-graphics/play-console-current/feature_graphic_1024.png">
+  
+  <title>Retro Pixel Racer - 8-Bit Arcade Racing</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --neon-pink: #FF007F;
+      --neon-cyan: #00FFFF;
+      --neon-yellow: #FFFF00;
+      --deep-bg: #0B0816;
+      --panel-bg: rgba(22, 17, 45, 0.7);
+      --border-glow: rgba(0, 255, 255, 0.2);
+      --font-retro: 'Press Start 2P', monospace;
+      --font-body: 'Outfit', 'Noto Sans KR', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--deep-bg);
+      color: #E2DDF0;
+      font-family: var(--font-body);
+      line-height: 1.6;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(255, 0, 127, 0.15), transparent 50%),
+        radial-gradient(circle at 10% 80%, rgba(0, 255, 255, 0.1), transparent 40%);
+    }
+
+    /* Widescreen Shell */
+    .shell {
+      width: min(1200px, calc(100% - 48px));
+      margin: 0 auto;
+    }
+
+    header {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(11, 8, 22, 0.85);
+    }
+
+    .nav-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font-retro);
+      font-size: 0.85rem;
+      color: var(--neon-cyan);
+      text-decoration: none;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    }
+
+    .brand span {
+      color: var(--neon-pink);
+      text-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .nav-links a {
+      color: #A99ECA;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: var(--neon-cyan);
+    }
+
+    .lang-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #FFF;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-family: inherit;
+    }
+
+    .lang-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 80px 0 40px 0;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero-tag {
+      font-family: var(--font-retro);
+      font-size: 0.7rem;
+      color: var(--neon-yellow);
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+      display: inline-block;
+      text-shadow: 0 0 8px rgba(255, 255, 0, 0.4);
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 6vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 24px;
+      letter-spacing: -1px;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--neon-pink), var(--neon-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 10px 30px rgba(255, 0, 127, 0.2);
+    }
+
+    .hero p {
+      font-size: clamp(1.05rem, 3vw, 1.25rem);
+      color: #A99ECA;
+      max-width: 720px;
+      margin: 0 auto 40px auto;
+      font-weight: 300;
+    }
+
+    /* Interactive Arcade Console Game Emulator */
+    .arcade-cabinet {
+      background: #15112B;
+      border: 6px solid #2B2554;
+      border-radius: 36px;
+      max-width: 760px;
+      margin: 0 auto 80px auto;
+      box-shadow: 
+        0 30px 80px rgba(0, 0, 0, 0.8),
+        inset 0 4px 0 rgba(255, 255, 255, 0.1),
+        0 0 50px rgba(110, 64, 255, 0.25);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .arcade-marquee {
+      background: #090614;
+      border-bottom: 4px solid #2B2554;
+      padding: 16px;
+      text-align: center;
+      font-family: var(--font-retro);
+      font-size: 0.8rem;
+      letter-spacing: 4px;
+      color: var(--neon-cyan);
+      text-shadow: 0 0 12px rgba(0, 255, 255, 0.6);
+      animation: neonGlow 2s infinite alternate;
+    }
+
+    @keyframes neonGlow {
+      0% { text-shadow: 0 0 8px rgba(0, 255, 255, 0.5); }
+      100% { text-shadow: 0 0 18px rgba(0, 255, 255, 0.8), 0 0 28px var(--neon-pink); }
+    }
+
+    .screen-container {
+      background: #000;
+      position: relative;
+      aspect-ratio: 16 / 9;
+      width: 100%;
+    }
+
+    /* Authentic CRT Scanline Overlay */
+    .screen-container::after {
+      content: " ";
+      display: block;
+      position: absolute;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      z-index: 10;
+      background-size: 100% 4px, 6px 100%;
+      pointer-events: none;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .arcade-controls {
+      background: #0E0A1E;
+      border-top: 4px solid #2B2554;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .control-status {
+      font-family: var(--font-retro);
+      font-size: 0.6rem;
+      color: var(--neon-yellow);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 20px;
+    }
+
+    .arcade-btn {
+      background: linear-gradient(to bottom, #FF0055, #C7003E);
+      border: 4px solid #1E000A;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 
+        0 6px 0 #1E000A,
+        0 12px 20px rgba(0, 0, 0, 0.4);
+      transition: transform 0.1s, box-shadow 0.1s;
+      position: relative;
+    }
+
+    .arcade-btn:active {
+      transform: translateY(4px);
+      box-shadow: 
+        0 2px 0 #1E000A,
+        0 4px 10px rgba(0, 0, 0, 0.4);
+    }
+
+    .arcade-btn::after {
+      content: attr(data-label);
+      position: absolute;
+      bottom: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-retro);
+      font-size: 0.55rem;
+      color: #A99ECA;
+      white-space: nowrap;
+    }
+
+    .arcade-btn.cyan {
+      background: linear-gradient(to bottom, #00E5FF, #00A6BA);
+      border-color: #002226;
+      box-shadow: 
+        0 6px 0 #002226,
+        0 12px 20px rgba(0, 0, 0, 0.4);
+    }
+    
+    .arcade-btn.cyan:active {
+      transform: translateY(4px);
+      box-shadow: 
+        0 2px 0 #002226,
+        0 4px 10px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Keyboard layout guidance */
+    .keyboard-guide {
+      display: flex;
+      gap: 24px;
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #7B72A4;
+    }
+
+    .key-badge {
+      background: #251D42;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: #FFF;
+      font-family: monospace;
+    }
+
+    /* Features Grid */
+    .section-title {
+      text-align: center;
+      font-family: var(--font-retro);
+      font-size: 1.1rem;
+      margin-bottom: 50px;
+      letter-spacing: 2px;
+      color: #FFF;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 100px;
+    }
+
+    .feat-card {
+      background: var(--panel-bg);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 24px;
+      padding: 36px;
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .feat-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(0, 255, 255, 0.2);
+      box-shadow: 0 16px 40px rgba(0, 255, 255, 0.08);
+    }
+
+    .feat-icon {
+      font-size: 2.2rem;
+      margin-bottom: 20px;
+      display: inline-block;
+    }
+
+    .feat-card h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #FFF;
+    }
+
+    .feat-card p {
+      color: #A99ECA;
+      font-size: 0.95rem;
+      font-weight: 300;
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 60px 0;
+      text-align: center;
+      color: #5F538C;
+      font-size: 0.9rem;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 20px;
+    }
+
+    .footer-links a {
+      color: #7B72A4;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .footer-links a:hover {
+      color: var(--neon-cyan);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .hero {
+        padding: 50px 0 30px 0;
+      }
+      .arcade-cabinet {
+        border-width: 4px;
+        border-radius: 20px;
+      }
+      .arcade-controls {
+        padding: 16px;
+      }
+      .arcade-btn {
+        width: 48px;
+        height: 48px;
+      }
+      .keyboard-guide {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header>
+    <div class="shell nav-container">
+      <a href="#" class="brand">
+        RETRO <span>PIXEL</span> RACER
+      </a>
+      <div class="nav-links">
+        <a href="#arcade" data-i18n="nav_play">웹 플레이</a>
+        <a href="#features" data-i18n="nav_features">게임 기능</a>
+        <a href="privacy.html" data-i18n="nav_privacy">개인정보방침</a>
+        <button class="lang-btn" id="langToggle">English</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="shell">
+    <section class="hero">
+      <span class="hero-tag" data-i18n="hero_tag">8-BIT ARCADE EVOLUTION</span>
+      <h1 id="hero_title">질주하라,<br><span>픽셀 너머의 한계까지</span></h1>
+      <p id="hero_desc">80년대 클래식 오락실 감성을 현대적인 모바일 기기에서 재현한 최고의 2D 스포츠 레이서! 지금 바로 가상 머신에서 모의 질주를 시작해 보세요.</p>
+    </section>
+
+    <!-- Arcade Console Cabinet Emulator Section -->
+    <section class="arcade-cabinet" id="arcade">
+      <div class="arcade-marquee" id="cabinet_marquee">* INSERT COIN TO STEER *</div>
+      <div class="screen-container">
+        <canvas id="gameCanvas" width="640" height="360"></canvas>
+      </div>
+      <div class="arcade-controls">
+        <div class="control-status" id="control_status" data-i18n="control_status">CLICK 'GO' PEDAL TO START EXHAUST EMISSION AND AUDIO ENGAGEMENT!</div>
+        <div class="btn-row">
+          <button class="arcade-btn cyan" id="btnLeft" data-label="LEFT (A)">◀</button>
+          <button class="arcade-btn cyan" id="btnRight" data-label="RIGHT (D)">▶</button>
+          <button class="arcade-btn" id="btnGas" data-label="GO! (W)">GO</button>
+        </div>
+        <div class="keyboard-guide">
+          <span><span class="key-badge">W</span> 가속 (Accel)</span>
+          <span><span class="key-badge">A</span> / <span class="key-badge">D</span> 조향 (Steer)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features">
+      <h2 class="section-title" id="features_title">// GAME MODULE FEATURES</h2>
+      <div class="features-grid">
+        <!-- Feat 1 -->
+        <div class="feat-card">
+          <span class="feat-icon">🏎️</span>
+          <h3 data-i18n="feat1_title">다양한 클래식 레이싱 카</h3>
+          <p data-i18n="feat1_desc">Classic Red, Vortex Blue, Cyber Green 등 각각 고유한 물리 성향과 외형을 갖춘 차량을 차고지(Garage)에서 수집하고 업그레이드할 수 있습니다.</p>
+        </div>
+        <!-- Feat 2 -->
+        <div class="feat-card">
+          <span class="feat-icon">⚡</span>
+          <h3 data-i18n="feat2_title">신디사이저 엔진 사운드</h3>
+          <p data-i18n="feat2_desc">기기 내부의 정밀 오디오 버퍼를 활용해 saw/square 파형으로 직접 생성해내는 진짜배기 레트로 8비트 사운드와 엔진 음을 들려줍니다.</p>
+        </div>
+        <!-- Feat 3 -->
+        <div class="feat-card">
+          <span class="feat-icon">🏁</span>
+          <h3 data-i18n="feat3_title">글로벌 리더보드 경쟁</h3>
+          <p data-i18n="feat3_desc">다양한 난이도와 테마를 지닌 시크릿 트랙들을 잠금 해제하고, 가상 멀티플레이어를 통해 전세계 드라이버들의 최고 기록에 도전하세요.</p>
+        </div>
+        <!-- Feat 4 -->
+        <div class="feat-card">
+          <span class="feat-icon">🎖️</span>
+          <h3 data-i18n="feat4_title">일일 스페셜 미션</h3>
+          <p data-i18n="feat4_desc">매일 새롭게 초기화되는 풍성한 골드 미션을 완수하여 코인을 획득하고 한계 속도(Max Speed)와 코너링 성능을 극한으로 끌어올리세요.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="shell">
+      <div class="footer-links">
+        <a href="https://github.com/jeiel85/retro-pixel-racer-android" target="_blank">GitHub Repository</a>
+        <a href="privacy.html">Privacy Policy</a>
+      </div>
+      <p>&copy; 2026 Aiden Park. All Rights Reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Script for Canvas Pseudo-3D Racing Simulation + Web Audio Synthesis -->
+  <script>
+    // i18n
+    const translations = {
+      ko: {
+        nav_play: "웹 플레이",
+        nav_features: "게임 기능",
+        nav_privacy: "개인정보방침",
+        hero_tag: "8-BIT ARCADE EVOLUTION",
+        hero_title: "질주하라,<br><span>픽셀 너머의 한계까지</span>",
+        hero_desc: "80년대 클래식 오락실 감성을 현대적인 모바일 기기에서 재현한 최고의 2D 스포츠 레이서! 지금 바로 가상 머신에서 모의 질주를 시작해 보세요.",
+        control_status: "GO 페달을 눌러 엔진 가속 및 8비트 사운드 신시사이저를 가동하세요!",
+        features_title: "// 게임 주요 특징 모듈",
+        feat1_title: "다양한 클래식 레이싱 카",
+        feat1_desc: "Classic Red, Vortex Blue, Cyber Green 등 각각 고유한 물리 성향과 외형을 갖춘 차량을 차고지(Garage)에서 수집하고 업그레이드할 수 있습니다.",
+        feat2_title: "신디사이저 엔진 사운드",
+        feat2_desc: "기기 내부의 정밀 오디오 버퍼를 활용해 saw/square 파형으로 직접 생성해내는 진짜배기 레트로 8비트 사운드와 엔진 음을 들려줍니다.",
+        feat3_title: "글로벌 리더보드 경쟁",
+        feat3_desc: "다양한 난이도와 테마를 지닌 시크릿 트랙들을 잠금 해제하고, 가상 멀티플레이어를 통해 전세계 드라이버들의 최고 기록에 도전하세요.",
+        feat4_title: "일일 스페셜 미션",
+        feat4_desc: "매일 새롭게 초기화되는 풍성한 골드 미션을 완수하여 코인을 획득하고 한계 속도(Max Speed)와 코너링 성능을 극한으로 끌어올리세요."
+      },
+      en: {
+        nav_play: "Web Play",
+        nav_features: "Features",
+        nav_privacy: "Privacy Policy",
+        hero_tag: "8-BIT ARCADE EVOLUTION",
+        hero_title: "Drive Beyond<br><span>The Pixel Limit</span>",
+        hero_desc: "An ultimate nostalgic 2D pixel sports racer reviving the golden 80s arcade vibe! Test drive on this virtual cabinet emulator right now.",
+        control_status: "PRESS 'GO' PEDAL TO IGNITE ENGINE HISS AND SYNTHESIZE 8-BIT RACING SFX!",
+        features_title: "// KEY GAMEPLAY MODULES",
+        feat1_title: "Classic Retro Garage",
+        feat1_desc: "Collect and customize iconic retro sports cars like Classic Red, Vortex Blue, and Cyber Green with specialized performance level tuners.",
+        feat2_title: "Procedural Audio Synthesizer",
+        feat2_desc: "Synthesizes authentic square waves, white noise crashes, and sweep alarms directly inside Web Audio buffers on the fly.",
+        feat3_title: "Global Leaderboard Dueling",
+        feat3_desc: "Unlock secret neon grids and glacial tracks to drift against virtual racer records to claim the number one podium.",
+        feat4_title: "Daily Gold Missions",
+        feat4_desc: "Fulfill daily reset checklists including top speed milestones and car tuning counts to receive substantial coin bonuses."
+      }
+    };
+
+    let currentLang = "ko";
+    const langToggle = document.getElementById("langToggle");
+
+    function updateLanguage() {
+      const trans = translations[currentLang];
+      document.querySelector("a[href='#arcade']").innerText = trans.nav_play;
+      document.querySelector("a[href='#features']").innerText = trans.nav_features;
+      document.querySelector("a[href='privacy.html']").innerText = trans.nav_privacy;
+      document.getElementById("hero_title").innerHTML = trans.hero_title;
+      document.getElementById("hero_desc").innerText = trans.hero_desc;
+      document.getElementById("features_title").innerText = trans.features_title;
+      document.querySelector(".hero-tag").innerText = trans.hero_tag;
+      
+      // Feature cards
+      document.querySelector("[data-i18n='feat1_title']").innerText = trans.feat1_title;
+      document.querySelector("[data-i18n='feat1_desc']").innerText = trans.feat1_desc;
+      document.querySelector("[data-i18n='feat2_title']").innerText = trans.feat2_title;
+      document.querySelector("[data-i18n='feat2_desc']").innerText = trans.feat2_desc;
+      document.querySelector("[data-i18n='feat3_title']").innerText = trans.feat3_title;
+      document.querySelector("[data-i18n='feat3_desc']").innerText = trans.feat3_desc;
+      document.querySelector("[data-i18n='feat4_title']").innerText = trans.feat4_title;
+      document.querySelector("[data-i18n='feat4_desc']").innerText = trans.feat4_desc;
+
+      langToggle.innerText = currentLang === "ko" ? "English" : "한국어";
+      
+      if (!audioCtx) {
+        document.getElementById("control_status").innerText = trans.control_status;
+      } else {
+        document.getElementById("control_status").innerText = currentLang === "ko" ? "조작중: 키보드(W, A, D) 또는 화면 버튼을 지원합니다!" : "ACTIVE: Keyboard keys (W, A, D) or screen buttons supported!";
+      }
+    }
+
+    langToggle.addEventListener("click", () => {
+      currentLang = currentLang === "ko" ? "en" : "ko";
+      updateLanguage();
+    });
+
+    // ----------------------------------------------------
+    // Canvas WebGL-Like Retro 2D/3D Racing Simulation Logic
+    // ----------------------------------------------------
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let playerX = 0;       // horizontal offset (-1.0 to 1.0)
+    let speed = 0;         // active speed
+    const maxSpeed = 180;  // km/h limit
+    let distance = 0;      // distance covered
+    let score = 0;         // coins count
+    let roadSegmentCount = 200;
+    let trackLength = 2000;
+    
+    // Controls states
+    let leftPressed = false;
+    let rightPressed = false;
+    let gasPressed = false;
+    
+    // Items
+    let coins = [];
+    let obstacles = [];
+    let particles = [];
+    
+    // Spawn initial elements deteministically
+    for (let d = 300; d < 3000; d += 200) {
+      if (Math.random() < 0.5) {
+        coins.push({ distance: d, x: (Math.random() - 0.5) * 1.2, collected: false });
+      } else {
+        obstacles.push({ distance: d, x: (Math.random() - 0.5) * 1.2, hit: false });
+      }
+    }
+
+    // Web Audio synthesizer states
+    let audioCtx = null;
+    let engineOsc = null;
+    let engineGain = null;
+
+    function initAudio() {
+      if (audioCtx) return;
+      
+      // Create Web Audio Context
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContextClass();
+      
+      // Setup Engine procedual saw synthesizer
+      engineOsc = audioCtx.createOscillator();
+      engineGain = audioCtx.createGain();
+      
+      engineOsc.type = "sawtooth";
+      engineOsc.frequency.setValueAtTime(50, audioCtx.currentTime); // Base RPM
+      engineGain.gain.setValueAtTime(0.04, audioCtx.currentTime); // Muted clean buzz
+      
+      engineOsc.connect(engineGain);
+      engineGain.connect(audioCtx.destination);
+      engineOsc.start();
+      
+      document.getElementById("control_status").innerText = currentLang === "ko" ? "조작중: 키보드(W, A, D) 또는 화면 버튼을 지원합니다!" : "ACTIVE: Keyboard keys (W, A, D) or screen buttons supported!";
+    }
+
+    function playBeep(freq, duration) {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "square";
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function playCrashSound() {
+      if (!audioCtx) return;
+      // White noise synthesis for explosion crash
+      const bufferSize = audioCtx.sampleRate * 0.4;
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = buffer;
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+      noise.connect(gain);
+      gain.connect(audioCtx.destination);
+      noise.start();
+    }
+
+    // Keyboard binders
+    window.addEventListener("keydown", (e) => {
+      initAudio();
+      if (e.key === "w" || e.key === "W" || e.key === "ArrowUp") gasPressed = true;
+      if (e.key === "a" || e.key === "A" || e.key === "ArrowLeft") leftPressed = true;
+      if (e.key === "d" || e.key === "D" || e.key === "ArrowRight") rightPressed = true;
+    });
+
+    window.addEventListener("keyup", (e) => {
+      if (e.key === "w" || e.key === "W" || e.key === "ArrowUp") gasPressed = false;
+      if (e.key === "a" || e.key === "A" || e.key === "ArrowLeft") leftPressed = false;
+      if (e.key === "d" || e.key === "D" || e.key === "ArrowRight") rightPressed = false;
+    });
+
+    // Touch/Mouse binders
+    const bindBtn = (btn, press, release) => {
+      btn.addEventListener("mousedown", () => { initAudio(); press(); });
+      btn.addEventListener("mouseup", release);
+      btn.addEventListener("touchstart", (e) => { e.preventDefault(); initAudio(); press(); });
+      btn.addEventListener("touchend", release);
+    };
+
+    bindBtn(document.getElementById("btnLeft"), () => leftPressed = true, () => leftPressed = false);
+    bindBtn(document.getElementById("btnRight"), () => rightPressed = true, () => rightPressed = false);
+    bindBtn(document.getElementById("btnGas"), () => gasPressed = true, () => gasPressed = false);
+
+    // Screen Shake state
+    let shakeAmt = 0;
+
+    // Simulation Frame Loop
+    function update(dt) {
+      if (gasPressed) {
+        speed = Math.min(speed + 45 * dt, maxSpeed);
+      } else {
+        speed = Math.max(speed - 35 * dt, 0);
+      }
+
+      if (leftPressed && speed > 5) {
+        playerX = Math.max(playerX - 1.4 * (speed / maxSpeed) * dt, -1.3);
+      }
+      if (rightPressed && speed > 5) {
+        playerX = Math.min(playerX + 1.4 * (speed / maxSpeed) * dt, 1.3);
+      }
+
+      // Off road friction
+      if (Math.abs(playerX) > 1.0) {
+        speed = Math.max(speed - 120 * dt, 30);
+        // Exhaust/grass sparks
+        if (Math.random() < 0.3) {
+          particles.push({
+            x: 320 + playerX * 120,
+            y: 310,
+            vx: (Math.random() - 0.5) * 50,
+            vy: -Math.random() * 80,
+            life: 1.0,
+            color: "#00FF00"
+          });
+        }
+      }
+
+      distance += (speed * 0.27) * dt; // translates to meters covered
+
+      // Adjust dynamic audio freq based on speed
+      if (audioCtx) {
+        const rpmFreq = 40 + (speed / maxSpeed) * 160;
+        engineOsc.frequency.setValueAtTime(rpmFreq, audioCtx.currentTime);
+      }
+
+      // Shake decay
+      if (shakeAmt > 0) {
+        shakeAmt = Math.max(shakeAmt - 10 * dt, 0);
+      }
+
+      // Items collision triggers
+      coins.forEach(coin => {
+        if (Math.abs(coin.distance - distance) < 5 && !coin.collected) {
+          if (Math.abs(coin.x - playerX) < 0.45) {
+            coin.collected = true;
+            score += 15;
+            playBeep(880, 0.15); // standard chime
+            // Particles
+            for(let i=0; i<8; i++) {
+              particles.push({
+                x: 320 + playerX * 120,
+                y: 300,
+                vx: (Math.random() - 0.5) * 100,
+                vy: -Math.random() * 120 - 40,
+                life: 1.0,
+                color: "#FFFF00"
+              });
+            }
+          }
+        }
+      });
+
+      obstacles.forEach(barrier => {
+        if (Math.abs(barrier.distance - distance) < 5 && !barrier.hit) {
+          if (Math.abs(barrier.x - playerX) < 0.45) {
+            barrier.hit = true;
+            speed = 25; // instant speed reduction penalty
+            shakeAmt = 8;
+            playCrashSound();
+            // Explosion sparks
+            for(let i=0; i<15; i++) {
+              particles.push({
+                x: 320 + playerX * 120,
+                y: 300,
+                vx: (Math.random() - 0.5) * 200,
+                vy: (Math.random() - 0.5) * 150 - 40,
+                life: 1.0,
+                color: "#FF3300"
+              });
+            }
+          }
+        }
+      });
+
+      // Update particles life
+      particles = particles.filter(p => {
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.life -= 2.0 * dt;
+        return p.life > 0;
+      });
+
+      // Infinite loop spawning details
+      if (distance > 3500) {
+        distance = 0;
+        coins.forEach(c => c.collected = false);
+        obstacles.forEach(o => o.hit = false);
+      }
+    }
+
+    // Render Canvas pseudo-3D
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.save();
+      if (shakeAmt > 0) {
+        const shakeX = (Math.random() - 0.5) * shakeAmt;
+        const shakeY = (Math.random() - 0.5) * shakeAmt;
+        ctx.translate(shakeX, shakeY);
+      }
+
+      // Draw Retro Horizon Sky gradient
+      let skyGrad = ctx.createLinearGradient(0, 0, 0, 180);
+      skyGrad.addColorStop(0, "#080512");
+      skyGrad.addColorStop(0.5, "#2D0A54");
+      skyGrad.addColorStop(1, "#FF007F");
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, canvas.width, 180);
+
+      // Draw a glowing sun
+      ctx.beginPath();
+      ctx.arc(320, 140, 45, 0, Math.PI * 2);
+      let sunGrad = ctx.createLinearGradient(320, 95, 320, 185);
+      sunGrad.addColorStop(0, "#FF007F");
+      sunGrad.addColorStop(1, "#FF8C00");
+      ctx.fillStyle = sunGrad;
+      ctx.fill();
+
+      // Horizon split
+      ctx.fillStyle = "#FF8C00";
+      ctx.fillRect(0, 178, canvas.width, 4);
+
+      // Draw perspective grid road
+      let horizonY = 180;
+      let drawHeight = canvas.height - horizonY;
+      ctx.fillStyle = "#1B133A"; // Grass background
+      ctx.fillRect(0, horizonY, canvas.width, drawHeight);
+
+      // Draw 3D Winding road stripes
+      for (let y = 0; y < drawHeight; y += 4) {
+        let screenY = horizonY + y;
+        let percent = y / drawHeight; // 0.0 at horizon, 1.0 at screen bottom
+        let roadWidth = 20 + percent * 240; // widening projection
+        let roadX = canvas.width / 2 - (playerX * percent * 180); // perspective adjustment
+
+        // Zebra alternators
+        let segmentIndex = Math.floor((distance * 0.15 + (1 - percent) * 12)) % 2;
+        ctx.fillStyle = (segmentIndex === 0) ? "#271B55" : "#1B133A";
+        
+        // Draw primary road lane block
+        ctx.fillRect(roadX - roadWidth, screenY, roadWidth * 2, 4);
+
+        // Zebra borders
+        ctx.fillStyle = (segmentIndex === 0) ? "#FF007F" : "#00FFFF";
+        ctx.fillRect(roadX - roadWidth - 4, screenY, 4, 4);
+        ctx.fillRect(roadX + roadWidth, screenY, 4, 4);
+      }
+
+      // Draw coins and barriers
+      let items = [];
+      coins.forEach(c => { if(!c.collected) items.push({ type: "COIN", x: c.x, dist: c.distance }); });
+      obstacles.forEach(o => { if(!o.hit) items.push({ type: "BARRIER", x: o.x, dist: o.distance }); });
+
+      // Sort items back-to-front (painter algorithm)
+      items.sort((a,b) => b.dist - a.dist);
+
+      items.forEach(item => {
+        let relativeDist = item.dist - distance;
+        if (relativeDist > 0 && relativeDist < 300) {
+          // Perspective math
+          let percent = (300 - relativeDist) / 300; // 0 at top, 1 at bottom
+          if (percent > 0 && percent < 1.0) {
+            let scale = percent * 22;
+            let drawY = horizonY + percent * drawHeight;
+            let drawX = (canvas.width / 2) + (item.x - playerX) * percent * 180;
+
+            if (item.type === "COIN") {
+              ctx.fillStyle = "#FFFF00";
+              ctx.beginPath();
+              ctx.arc(drawX, drawY - scale/2, scale/2, 0, Math.PI*2);
+              ctx.fill();
+              // Core glow
+              ctx.fillStyle = "#FFF";
+              ctx.beginPath();
+              ctx.arc(drawX, drawY - scale/2, scale/4, 0, Math.PI*2);
+              ctx.fill();
+            } else {
+              // Barrier hazard
+              ctx.fillStyle = "#FF3300";
+              ctx.fillRect(drawX - scale, drawY - scale, scale * 2, scale);
+              // Striped warning
+              ctx.fillStyle = "#FFFF00";
+              ctx.fillRect(drawX - scale/2, drawY - scale, scale, scale);
+            }
+          }
+        }
+      });
+
+      // Draw Particles
+      particles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, 6 * p.life, 6 * p.life);
+      });
+
+      // Draw Player vintage sports car at bottom center
+      let carY = 320;
+      let carWidth = 56;
+      let carHeight = 28;
+      let carX = canvas.width / 2 - carWidth / 2;
+
+      // Outer wheels shadow
+      ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+      ctx.fillRect(carX - 4, carY + 8, carWidth + 8, 8);
+
+      // Chassis Red sports paint
+      ctx.fillStyle = "#FF003C";
+      ctx.fillRect(carX, carY, carWidth, carHeight);
+
+      // Spoiler
+      ctx.fillStyle = "#333";
+      ctx.fillRect(carX - 6, carY - 6, carWidth + 12, 4);
+      ctx.fillRect(carX - 2, carY - 2, 4, 6);
+      ctx.fillRect(carX + carWidth - 2, carY - 2, 4, 6);
+
+      // Cabin windshield
+      ctx.fillStyle = "#00FFFF";
+      ctx.fillRect(carX + 10, carY + 4, carWidth - 20, 8);
+
+      // Exhaust tail fire glow if accelerating
+      if (gasPressed && Math.random() < 0.5) {
+        ctx.fillStyle = "#FFCC00";
+        ctx.fillRect(carX + 16, carY + carHeight, 8, 4);
+        ctx.fillRect(carX + carWidth - 24, carY + carHeight, 8, 4);
+      }
+
+      ctx.restore();
+
+      // Top HUD Overlay
+      ctx.fillStyle = "rgba(11, 8, 22, 0.8)";
+      ctx.fillRect(0, 0, canvas.width, 36);
+
+      ctx.fillStyle = "#FFF";
+      ctx.font = "11px 'Press Start 2P', monospace";
+      ctx.fillText(`SPEED: ${Math.floor(speed)} KM/H`, 15, 24);
+      
+      ctx.fillStyle = "#FFFF00";
+      ctx.fillText(`COINS: ${score}`, 270, 24);
+      
+      ctx.fillStyle = "#00FFFF";
+      ctx.fillText(`DIST: ${Math.floor(distance)}M`, 480, 24);
+    }
+
+    // Animation Loop
+    let lastTime = 0;
+    function loop(now) {
+      if (!lastTime) lastTime = now;
+      let dt = (now - lastTime) / 1000.0;
+      if (dt > 0.1) dt = 0.1; // clamp lag
+      lastTime = now;
+
+      update(dt);
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    // Start simulation frame
+    requestAnimationFrame(loop);
+
+    // Initialize display lang
+    updateLanguage();
+  </script>
+</body>
+</html>

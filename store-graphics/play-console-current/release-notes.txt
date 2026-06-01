@@ -1,0 +1,15 @@
+<ko-KR>
+- 패키지 네임스페이스 최적화 및 릴리즈 서명 보안 수립
+- 고품질 레트로 픽셀 아트 스타일 앱 아이콘 및 스토어 피처 배너 전면 적용
+- 실시간 saw/square 8비트 사운드 신시사이저 엔진 안정화
+- 트랙 해금 및 차고지 성능 튜닝(엔진, 조향, 속도) 버그 수정 및 완성도 고도화
+- 로컬 Room DB 데이터 및 Preferences 설정 저장 메커니즘 최적화
+</ko-KR>
+
+<en-US>
+- Optimized package namespaces and established secure release signing configs.
+- Integrated premium retro pixel-art launcher icons and store feature graphics.
+- Stabilized the real-time square/sawtooth 8-bit audio synthesis engine.
+- Polished garage upgrade tuners (engine, handling, top speed) and track unlock stages.
+- Refined Room DB offline data sandboxing and preferences persistence flows.
+</en-US>
