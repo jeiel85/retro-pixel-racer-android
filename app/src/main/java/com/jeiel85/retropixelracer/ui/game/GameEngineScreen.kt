@@ -1,5 +1,6 @@
 package com.jeiel85.retropixelracer.ui.game
 
+import android.view.MotionEvent
 import android.view.KeyEvent
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
@@ -13,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -27,10 +29,12 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jeiel85.retropixelracer.data.entity.UserProfile
@@ -739,51 +743,26 @@ fun GameEngineScreen(
                 modifier = Modifier.align(Alignment.BottomStart),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // LEFT
-                Button(
-                    onClick = {},
+                OnScreenGameControl(
+                    label = "◀",
+                    modifier = Modifier.size(68.dp),
+                    containerColor = Color.DarkGray.copy(alpha = 0.85f),
                     shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.DarkGray.copy(alpha = 0.85f),
-                        contentColor = Color.White
-                    ),
-                    modifier = Modifier
-                        .size(68.dp)
-                        .pointerInput(Unit) {
-                            detectTapGestures(
-                                onPress = {
-                                    keyLeftPressed = true
-                                    tryAwaitRelease()
-                                    keyLeftPressed = false
-                                }
-                            )
-                        }
-                ) {
-                    Text("◀", fontSize = 24.sp)
-                }
+                    focusRequester = focusRequester,
+                    onPressedChange = { keyLeftPressed = it },
+                    fontSize = 24.sp
+                )
 
                 // RIGHT
-                Button(
-                    onClick = {},
+                OnScreenGameControl(
+                    label = "▶",
+                    modifier = Modifier.size(68.dp),
+                    containerColor = Color.DarkGray.copy(alpha = 0.85f),
                     shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.DarkGray.copy(alpha = 0.85f),
-                        contentColor = Color.White
-                    ),
-                    modifier = Modifier
-                        .size(68.dp)
-                        .pointerInput(Unit) {
-                            detectTapGestures(
-                                onPress = {
-                                    keyRightPressed = true
-                                    tryAwaitRelease()
-                                    keyRightPressed = false
-                                }
-                            )
-                        }
-                ) {
-                    Text("▶", fontSize = 24.sp)
-                }
+                    focusRequester = focusRequester,
+                    onPressedChange = { keyRightPressed = it },
+                    fontSize = 24.sp
+                )
             }
 
             // Gas / Brake Pedals on Right
@@ -792,50 +771,26 @@ fun GameEngineScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // BRAKE
-                Button(
-                    onClick = {},
+                OnScreenGameControl(
+                    label = "STOP\n(S)",
+                    modifier = Modifier.size(64.dp, 68.dp),
+                    containerColor = Color(0xFFC62828).copy(alpha = 0.85f),
                     shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFC62828).copy(alpha = 0.85f),
-                        contentColor = Color.White
-                    ),
-                    modifier = Modifier
-                        .size(64.dp, 68.dp)
-                        .pointerInput(Unit) {
-                            detectTapGestures(
-                                onPress = {
-                                    keyBrakePressed = true
-                                    tryAwaitRelease()
-                                    keyBrakePressed = false
-                                }
-                            )
-                        }
-                ) {
-                    Text("STOP\n(S)", fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                }
+                    focusRequester = focusRequester,
+                    onPressedChange = { keyBrakePressed = it },
+                    fontSize = 10.sp
+                )
 
                 // ACCEL GAS
-                Button(
-                    onClick = {},
+                OnScreenGameControl(
+                    label = "GO!\n(W)",
+                    modifier = Modifier.size(76.dp, 68.dp),
+                    containerColor = Color(0xFF2E7D32).copy(alpha = 0.85f),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2E7D32).copy(alpha = 0.85f),
-                        contentColor = Color.White
-                    ),
-                    modifier = Modifier
-                        .size(76.dp, 68.dp)
-                        .pointerInput(Unit) {
-                            detectTapGestures(
-                                onPress = {
-                                    keyGasPressed = true
-                                    tryAwaitRelease()
-                                    keyGasPressed = false
-                                }
-                            )
-                        }
-                ) {
-                    Text("GO!\n(W)", fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                }
+                    focusRequester = focusRequester,
+                    onPressedChange = { keyGasPressed = it },
+                    fontSize = 14.sp
+                )
             }
         }
 
@@ -1515,6 +1470,55 @@ private fun DrawScope.drawPixelCarSprite(
         // Red taillights details for back orientation
         drawRect(color = Color.Red, topLeft = Offset(centerX - bodyW/2 + 2 * scale, centerY + bodyH/2 - 2 * scale), size = Size(3 * scale, 1.5f * scale))
         drawRect(color = Color.Red, topLeft = Offset(centerX + bodyW/2 - 5 * scale, centerY + bodyH/2 - 2 * scale), size = Size(3 * scale, 1.5f * scale))
+    }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun OnScreenGameControl(
+    label: String,
+    modifier: Modifier = Modifier,
+    containerColor: Color,
+    shape: RoundedCornerShape,
+    focusRequester: FocusRequester,
+    onPressedChange: (Boolean) -> Unit,
+    fontSize: androidx.compose.ui.unit.TextUnit
+) {
+    DisposableEffect(Unit) {
+        onDispose { onPressedChange(false) }
+    }
+
+    Box(
+        modifier = modifier
+            .background(containerColor, shape)
+            .border(2.dp, Color.White.copy(alpha = 0.65f), shape)
+            .pointerInteropFilter { event ->
+                when (event.actionMasked) {
+                    MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
+                        focusRequester.requestFocus()
+                        onPressedChange(true)
+                        true
+                    }
+                    MotionEvent.ACTION_UP,
+                    MotionEvent.ACTION_POINTER_UP,
+                    MotionEvent.ACTION_CANCEL -> {
+                        onPressedChange(false)
+                        true
+                    }
+                    else -> true
+                }
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            color = Color.White,
+            fontSize = fontSize,
+            fontWeight = FontWeight.Bold,
+            fontFamily = FontFamily.Monospace,
+            lineHeight = fontSize * 1.1f,
+            textAlign = TextAlign.Center
+        )
     }
 }
 

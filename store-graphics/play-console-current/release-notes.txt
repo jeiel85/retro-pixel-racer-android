@@ -1,13 +1,11 @@
 <ko-KR>
-- 멀티플레이어 대결 시스템 고도화: 경쟁 라이벌 AI가 고정 속도 대신 플레이어의 거리를 추적해 추격하는 다이나믹 러버밴딩(Rubber-Banding) AI 시스템을 탑재했습니다. 플레이어 주행 능력에 맞춰 강력한 '질주 가속'을 발휘합니다.
-- 슬립스트림(드래프팅) 가속 부스터 도입: 라이벌 차량 바로 뒤(40m 이내)에 밀착 주행할 때 공기 저항이 감소하여 +15% 속도 보너스와 +30% 가속 서지 부스트를 획득할 수 있습니다. 캔버스 상에 눈부신 네온-블루 바람길 연출 및 HUD 배너가 실시간 작동합니다.
-- 지능형 충돌 회피 물리 적용: 플레이어가 라이벌 차량 앞을 가로막아 방해할 경우, AI가 지능적으로 제동(제동 적색 스파크 작동)하고 스티어링을 꺾어 우회 추월을 시도합니다.
-- 로비 연결 로그 그래픽 추가: 멀티플레이 대결 매칭 시 실시간 터미널 연결 신호 검색 로그 콘솔이 추가되어 더욱 높은 현장감과 진짜 온라인 환경 같은 매칭 몰입감을 완성했습니다.
+- 화면 GO 페달과 방향 버튼의 터치 반응을 안정화했습니다.
+- 모바일에서 페달을 누르고 있는 동안 가속/조향 상태가 더 확실하게 유지됩니다.
+- 터치가 취소되거나 화면을 벗어날 때 입력 상태가 자연스럽게 정리되도록 개선했습니다.
 </ko-KR>
 
 <en-US>
-- Premium Multiplayer AI Rubber-Banding: The matched Rival now tracks your distance dynamically, activating catch-up "nitro" boosts (+18% speed) to stay neck-and-neck with you.
-- Slipstream Drafting Boost: Tailgate directly behind the Rival (within 40m) to enter a slipstream, earning a +15% top-speed boost and +30% acceleration surge. Features striking animated neon-blue wind vectors and drafting HUD cards.
-- Interactive Blocking & AI Dodging: Blocking the Rival's lane now makes the AI actively brake (emitting brake taillight sparks) and steer dynamically around you to attempt a pass.
-- Matchmaking Log Console Card: Added realistic real-time command-line transceiver network sync logs to the Lobby screen, delivering an authentic live-matching arcade experience.
+- Stabilized touch response for the on-screen GO pedal and steering buttons.
+- Acceleration and steering now stay active more reliably while you hold a mobile control.
+- Input state now clears cleanly when a touch is canceled or leaves the control area.
 </en-US>
