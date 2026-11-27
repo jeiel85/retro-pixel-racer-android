@@ -76,7 +76,7 @@ graph TD
 
 ### 1. 개발 및 빌드 환경 요구사항
 * **Android Studio**: Ladybug (2024.2.1) 이상 권장
-* **JDK**: Version 17 이상
+* **JDK**: Version 21 이상 (Robolectric이 SDK 36 단위 시험에 Java 21을 요구)
 * **Android SDK**: Compile SDK 36 (API 36), Min SDK 24 이상
 
 ### 2. 로컬 빌드 및 컴파일 방법
@@ -105,6 +105,21 @@ echo "GEMINI_API_KEY=your_gemini_api_key" > .env
 
 ## 📦 구글 플레이 릴리즈 배포 태스크
 
+### Play 업로드는 CI에서 (기본 경로)
+
+Play 테스트 트랙 업로드는 GitHub Actions 워크플로 [`play-release.yml`](.github/workflows/play-release.yml)이 합니다.
+
+1. `app/build.gradle.kts`의 `versionCode`·`versionName`을 올리고, `store-graphics/play-console-current/release-notes.txt`의 `<ko-KR>`·`<en-US>` 블록을 이번 버전 내용으로 바꿔 main에 머지합니다.
+2. `v<versionName>` 태그(예: `v1.4`)를 push 합니다. 태그와 `versionName`이 다르면 워크플로가 멈춥니다.
+3. Actions 화면에서 `play` 환경 배포를 승인하면(jeiel85만 가능) 단위 시험 → Play 업로드 키로 서명한 AAB 빌드 → 업로드 인증서 SHA-256 고정 확인 → 이 앱이 쓰는 테스트 트랙(현재 `alpha`) 업로드 → 트랙 상태 확인 순으로 진행합니다. 트랙이 여러 개가 되면 워크플로의 `TRACKS`에 추가합니다(첫 트랙에 AAB를 올리고 나머지에는 같은 versionCode를 붙입니다). 프로덕션에는 올리지 않습니다.
+4. 올리지 않고 확인만 하려면 Actions → Play release → Run workflow에서 `version`을 넣고 `dry_run`을 켭니다.
+
+- 비밀값(업로드 키스토어 base64·비밀번호·별칭·Play 서비스 계정 키)은 GitHub 환경 `play`의 Secrets에만 있고, 그 환경은 main 브랜치와 `v*` 태그에서만 쓸 수 있습니다.
+- 이 저장소에는 다른 릴리스 워크플로가 없어서 태그 하나에 워크플로가 한 번만 돕니다.
+- **CI로 올린 버전을 아래 로컬 태스크 산출물로 Play Console에 다시 올리지 않습니다**(같은 versionCode는 Play가 거부합니다). 로컬 태스크는 CI를 쓸 수 없을 때의 대체 경로입니다.
+
+### 로컬 배포본 만들기 (대체 경로)
+
 본 프로젝트에는 플레이 스토어 배포본 생성을 완벽히 자동화하기 위해 **커스텀 Gradle 태스크**가 구축되어 있습니다.
 
 ```bash
@@ -112,7 +127,7 @@ echo "GEMINI_API_KEY=your_gemini_api_key" > .env
 ./gradlew :app:exportReleaseToDesktop
 ```
 
-### 💎 배포 태스크 동작 원리
+#### 💎 배포 태스크 동작 원리
 1. **R8 최적화 컴파일**: 릴리즈 최적화와 난독화 코드를 R8 엔진을 통해 컴파일하여 바이너리 용량을 50% 이상 극도로 축소합니다.
 2. **배포 서명 연동**: 로컬 `debug.keystore` 또는 환경 변수 기반 릴리즈 서명키를 바이너리에 탑재합니다.
 3. **데스크톱 배포본 내보내기**: 빌드가 완료되면 사용자 바탕화면에 **`Build` 폴더(`C:\Users\jeiel\Desktop\Build`)**를 생성하고, 그 안에 아래 두 에셋을 단일 폴더로 묶어 깔끔하게 내보냅니다.
