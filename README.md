@@ -111,7 +111,7 @@ Play 테스트 트랙 업로드는 GitHub Actions 워크플로 [`play-release.ym
 
 1. `app/build.gradle.kts`의 `versionCode`·`versionName`을 올리고, `store-graphics/play-console-current/release-notes.txt`의 `<ko-KR>`·`<en-US>` 블록을 이번 버전 내용으로 바꿔 main에 머지합니다.
 2. `v<versionName>` 태그(예: `v1.4`)를 push 합니다. 태그와 `versionName`이 다르면 워크플로가 멈춥니다.
-3. Actions 화면에서 `play` 환경 배포를 승인하면(jeiel85만 가능) 단위 시험 → Play 업로드 키로 서명한 AAB 빌드 → 업로드 인증서 SHA-256 고정 확인 → 이 앱이 쓰는 테스트 트랙(현재 `alpha`) 업로드 → 트랙 상태 확인 순으로 진행합니다. 트랙이 여러 개가 되면 워크플로의 `TRACKS`에 추가합니다(첫 트랙에 AAB를 올리고 나머지에는 같은 versionCode를 붙입니다). 프로덕션에는 올리지 않습니다.
+3. 태그가 올라오면 승인 없이(2026-11-28 사용자 결정) 바로 단위 시험 → Play 업로드 키로 서명한 AAB 빌드 → 업로드 인증서 SHA-256 고정 확인 → 이 앱이 쓰는 테스트 트랙(현재 `alpha`) 업로드 → 트랙 상태 확인 순으로 진행합니다. 트랙이 여러 개가 되면 워크플로의 `TRACKS`에 추가합니다(첫 트랙에 AAB를 올리고 나머지에는 같은 versionCode를 붙입니다). 프로덕션에는 올리지 않습니다.
 4. 올리지 않고 확인만 하려면 Actions → Play release → Run workflow에서 `version`을 넣고 `dry_run`을 켭니다.
 
 - 비밀값(업로드 키스토어 base64·비밀번호·별칭·Play 서비스 계정 키)은 GitHub 환경 `play`의 Secrets에만 있고, 그 환경은 main 브랜치와 `v*` 태그에서만 쓸 수 있습니다.

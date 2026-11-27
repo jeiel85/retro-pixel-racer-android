@@ -2,7 +2,7 @@
 #
 # - 태그 v<versionName>(예: v1.3, v1.4.0)이 올라오면 그 버전을 올립니다. 태그는 app/build.gradle.kts의 versionName과 같아야 합니다.
 # - Actions 화면에서 손으로 돌릴 수도 있습니다(version 입력). dry_run을 켜면 빌드·서명 확인·트랙 조회까지만 하고 올리지 않습니다.
-# 비밀값은 GitHub 환경 'play'에만 있고, 그 환경은 jeiel85의 승인을 받아야 실행됩니다(main 브랜치·v* 태그만).
+# 비밀값은 GitHub 환경 'play'에만 있고, 그 환경은 main 브랜치·v* 태그에서만 쓸 수 있습니다. 승인 없음(2026-11-28 사용자 결정).
 name: Play release
 
 on:
