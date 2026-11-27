@@ -1,0 +1,138 @@
+# Play용 AAB를 CI에서 빌드해 Play 테스트 트랙에 올립니다(README "구글 플레이 릴리즈 배포").
+#
+# - 태그 v<versionName>(예: v1.3, v1.4.0)이 올라오면 그 버전을 올립니다. 태그는 app/build.gradle.kts의 versionName과 같아야 합니다.
+# - Actions 화면에서 손으로 돌릴 수도 있습니다(version 입력). dry_run을 켜면 빌드·서명 확인·트랙 조회까지만 하고 올리지 않습니다.
+# 비밀값은 GitHub 환경 'play'에만 있고, 그 환경은 jeiel85의 승인을 받아야 실행됩니다(main 브랜치·v* 태그만).
+name: Play release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '버전 (app/build.gradle.kts의 versionName과 같아야 함, 예: 1.3)'
+        required: true
+      dry_run:
+        description: '올리지 않고 빌드·서명 확인·트랙 조회만'
+        type: boolean
+        default: false
+
+concurrency:
+  group: play-release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  play:
+    runs-on: ubuntu-latest
+    environment: play
+    timeout-minutes: 40
+    env:
+      PACKAGE: com.jeiel85.retropixelracer
+      # 이 앱이 쓰는 테스트 트랙(2026-11-27 기준 alpha만). 첫 트랙에 AAB를 올리고 나머지 트랙에는 같은 versionCode를 붙입니다.
+      TRACKS: alpha
+      # Play 업로드 키(my-upload-key.jks, 별칭 upload) 인증서. 다른 키로 서명된 번들은 올리기 전에 멈춥니다.
+      UPLOAD_CERT_SHA256: 'FA:5A:B3:82:B4:B7:AA:D8:AD:58:FE:D7:AE:16:0F:A8:60:5E:53:69:8E:AF:78:9B:61:FF:5D:B9:00:B1:77:E9'
+      NOTES_FILE: store-graphics/play-console-current/release-notes.txt
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 버전 정하기
+        id: ver
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          DRY: ${{ inputs.dry_run }}
+        run: |
+          NAME=$(sed -nE 's/^[[:space:]]*versionName = "([^"]+)".*/\1/p' app/build.gradle.kts)
+          CODE=$(sed -nE 's/^[[:space:]]*versionCode = ([0-9]+).*/\1/p' app/build.gradle.kts)
+          [ -n "$NAME" ] && [[ "$CODE" =~ ^[0-9]+$ ]] || { echo "::error::app/build.gradle.kts에서 versionName/versionCode를 읽지 못했습니다"; exit 1; }
+          if [ "$GITHUB_EVENT_NAME" = push ]; then VER="${GITHUB_REF_NAME#v}"; else VER="$INPUT_VERSION"; fi
+          [ "$VER" = "$NAME" ] || { echo "::error::버전($VER)이 app/build.gradle.kts의 versionName($NAME)과 다릅니다"; exit 1; }
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          echo "code=$CODE" >> "$GITHUB_OUTPUT"
+          echo "dry=${DRY:-false}" >> "$GITHUB_OUTPUT"
+          echo "버전 $VER (versionCode $CODE)"
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: 서명 키 놓기
+        env:
+          KEYSTORE_B64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_B64 }}
+        run: |
+          mkdir -p .keystore
+          printf '%s' "$KEYSTORE_B64" | base64 -d > .keystore/play-upload.jks
+          [ -s .keystore/play-upload.jks ]
+
+      - name: 시험·AAB 빌드
+        env:
+          KEYSTORE_PATH: ${{ github.workspace }}/.keystore/play-upload.jks
+          STORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+        run: |
+          ./gradlew --no-daemon :app:testDebugUnitTest :app:bundleRelease
+          AAB=app/build/outputs/bundle/release/app-release.aab
+          [ -s "$AAB" ] || { echo "::error::AAB가 없습니다: $AAB"; exit 1; }
+          mkdir -p dist
+          cp "$AAB" "dist/RetroPixelRacer-v${{ steps.ver.outputs.version }}-vc${{ steps.ver.outputs.code }}.aab"
+          echo "AAB=dist/RetroPixelRacer-v${{ steps.ver.outputs.version }}-vc${{ steps.ver.outputs.code }}.aab" >> "$GITHUB_ENV"
+
+      - name: 출시 노트(release-notes.txt의 ko-KR·en-US 블록)
+        run: |
+          awk '/<ko-KR>/{on=1; next} /<\/ko-KR>/{on=0} on' "$NOTES_FILE" > dist/notes-ko.txt
+          awk '/<en-US>/{on=1; next} /<\/en-US>/{on=0} on' "$NOTES_FILE" > dist/notes-en.txt
+          [ -s dist/notes-ko.txt ] && [ -s dist/notes-en.txt ] || { echo "::error::$NOTES_FILE에 <ko-KR>/<en-US> 블록이 없습니다"; exit 1; }
+          cat dist/notes-ko.txt dist/notes-en.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: retropixelracer-play-${{ steps.ver.outputs.version }}
+          path: |
+            ${{ env.AAB }}
+            dist/notes-ko.txt
+            dist/notes-en.txt
+          retention-days: 30
+
+      - name: Play 트랙 상태(올리기 전)
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: pwsh -NoProfile -File tools/play-publish.ps1 -PackageName "$PACKAGE" -ShowTracks
+
+      - name: 테스트 트랙에 올리기
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          VER: ${{ steps.ver.outputs.version }}
+          CODE: ${{ steps.ver.outputs.code }}
+          DRY: ${{ steps.ver.outputs.dry }}
+        run: |
+          DRYFLAG=(); [ "$DRY" = true ] && DRYFLAG=(-DryRun)
+          NOTES=(-VersionName "$VER" -NotesKoFile dist/notes-ko.txt -NotesEnFile dist/notes-en.txt)
+          FIRST=1
+          for T in $TRACKS; do
+            if [ "$FIRST" = 1 ]; then
+              pwsh -NoProfile -File tools/play-publish.ps1 -PackageName "$PACKAGE" -Track "$T" -AabPath "$AAB" \
+                -ExpectedVersionCode "$CODE" -ExpectedUploadCertSha256 "$UPLOAD_CERT_SHA256" "${NOTES[@]}" "${DRYFLAG[@]}"
+              FIRST=0
+            else
+              pwsh -NoProfile -File tools/play-publish.ps1 -PackageName "$PACKAGE" -Track "$T" \
+                -ExpectedVersionCode "$CODE" "${NOTES[@]}" "${DRYFLAG[@]}"
+            fi
+          done
+
+      - name: Play 트랙 상태(올린 뒤)
+        if: steps.ver.outputs.dry != 'true'
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: pwsh -NoProfile -File tools/play-publish.ps1 -PackageName "$PACKAGE" -ShowTracks
+
+      - name: 키 지우기
+        if: always()
+        run: rm -rf .keystore
